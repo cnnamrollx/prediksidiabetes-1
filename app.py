@@ -4,9 +4,56 @@ import numpy as np
 import pandas as pd
 import json
 
+st.markdown("""
+<style>
+/* Latar belakang dan font */
+.stApp {
+    background-color: #fff5f7;  /* pink pastel */
+    color: #2d3436;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Tombol */
+.stButton > button {
+    background-color: #81c784;  /* hijau pastel */
+    color: white;
+    border: none;
+    padding: 0.5em 1em;
+    border-radius: 8px;
+    transition: 0.3s ease;
+}
+.stButton > button:hover {
+    background-color: #66bb6a; /* hijau sedikit lebih gelap */
+}
+
+/* Sidebar warna pink terang */
+[data-testid="stSidebar"] {
+    background-color: #ffe4ec !important;
+}
+
+/* Judul dan header */
+h1, h2, h3 {
+    color: #d81b60; /* pink tua */
+}
+.title-style {
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: -30px;
+    color: #d81b60;
+}
+
+/* Kotak input */
+.stNumberInput > div > div > input {
+    background-color: white;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 # Konfigurasi tampilan halaman
 st.set_page_config(
-    page_title="Deteksi Dini Diabetes",
+    page_title="Diabetes Detection System",
     page_icon="🩺",
     layout="centered"
 )
@@ -35,15 +82,13 @@ mode = st.sidebar.radio("", ['Beranda', 'Input Manual', 'Upload CSV'])
 
 # Halaman Beranda
 if mode == 'Beranda':
-    st.title('🩺 Aplikasi Deteksi Dini Diabetes')
+    st.title('🩺Diabetes Detection System')
     st.markdown("""
     <div style='text-align: justify'>
 
     ### ⓘ Tentang Aplikasi
 
-    Aplikasi ini menggunakan model algoritma <b>Random Forest Classifier</b> untuk memprediksi risiko penyakit diabetes berdasarkan data medis pasien. Terdapat dua mode pilihan prediksi, yaitu <b>Input Manual</b> untuk satu pasien dan <b>Upload CSV</b> untuk prediksi massal dari banyak pasien sekaligus.
-
-    Aplikasi ini ditujukan untuk membantu proses skrining awal serta memberikan gambaran cepat terhadap potensi risiko diabetes, terutama bagi tenaga kesehatan, peneliti, maupun masyarakat umum.
+    Aplikasi ini menggunakan model algoritma <b>Random Forest Classifier</b> untuk memprediksi risiko penyakit diabetes berdasarkan data medis pasien. Tersedia dua mode input: Input Manual untuk satu pasien dan Upload CSV untuk banyak pasien sekaligus.
 
     > ⚠️ Hasil prediksi ini bukan merupakan diagnosis medis resmi. Untuk kepastian, tetap dianjurkan melakukan konsultasi langsung dengan tenaga medis profesional.</i>
 
@@ -53,24 +98,13 @@ if mode == 'Beranda':
     """, unsafe_allow_html=True)
 
     # Evaluasi Model hanya di halaman Beranda
-    st.header('📊 Evaluasi Model')
+    st.header('Evaluasi Model')
     st.write(f"**Skor Cross-Validation:** {metrics['cv_score']:.2%}")
     report = metrics['classification_report']
     st.write('**Kelas: Tidak Diabetes (0)**')
     st.write(f"Precision: {report['0']['precision']:.2f}")
     st.write(f"Recall: {report['0']['recall']:.2f}")
     st.write(f"F1-Score: {report['0']['f1-score']:.2f}")
-
-    # Penjelasan Evaluasi Model
-    st.markdown("""
-    <div style='text-align: justify'>
-    <b>╰┈➤Mengapa Perlu Evaluasi Model?</b><br><br>
-    Evaluasi model dilakukan untuk mengukur <b>seberapa baik model machine learning bekerja</b> dalam membuat prediksi.
-    Dengan melihat metrik seperti <b>akurasi, precision, recall, dan F1-score</b>, kita dapat memastikan bahwa model sudah cukup andal sebelum digunakan untuk memprediksi risiko diabetes pada pasien.<br><br>
-    Evaluasi ini juga membantu menghindari kesalahan prediksi yang bisa berdampak serius dalam konteks medis.
-    </div>
-    """, unsafe_allow_html=True)
-
 
 # Halaman Input Manual
 if mode == 'Input Manual':
@@ -80,23 +114,23 @@ if mode == 'Input Manual':
     col1, col2 = st.columns(2)
 
     with col1:
-        pregnancies = st.number_input('Pregnancies (Jumlah Kehamilan)', 0, 20, 0,
+        pregnancies = st.number_input('Pregnancies (Jumlah Kehamilan)', min_value=0, max_value=20, value=0,
                                     help="Jumlah kehamilan yang pernah dialami pasien")
-        glucose = st.number_input('Glucose (Kadar Glukosa)', 0, 200, 100,
+        glucose = st.number_input('Glucose (Kadar Glukosa)', min_value=0, max_value=200, value=0,
                                 help="Kadar glukosa darah (mg/dL)")
-        blood_pressure = st.number_input('Blood Pressure (Tekanan Darah)', 0, 150, 70,
+        blood_pressure = st.number_input('Blood Pressure (Tekanan Darah)', min_value=0, max_value=150, value=0,
                                         help="Tekanan darah (mmHg)")
-        skin_thickness = st.number_input('Skin Thickness (Ketebalan Kulit)', 0, 100, 20,
+        skin_thickness = st.number_input('Skin Thickness (Ketebalan Kulit)', min_value=0, max_value=100, value=0,
                                         help="Ketebalan lipatan kulit (mm) sebagai indikasi lemak tubuh")
 
     with col2:
-        insulin = st.number_input('Insulin (Kadar Insulin)', 0, 900, 0,
+        insulin = st.number_input('Insulin (Kadar Insulin)', min_value=0, max_value=900, value=0,
                                 help="Kadar insulin dalam darah (mu U/ml)")
-        bmi = st.number_input('BMI (Indeks Massa Tubuh)', 0.0, 70.0, 25.0,
-                            help="Indeks Massa Tubuh = berat badan / (tinggi badan)^2")
-        diabetes_pedigree = st.number_input('Diabetes Pedigree Function (Riwayat Keluarga)', 0.0, 3.0, 0.5,
+        bmi = st.number_input('BMI (Indeks Massa Tubuh)', min_value=0.0, max_value=70.0, value=0.0,
+                            help="Hitung BMI = berat badan / (tinggi badan)^2")
+        diabetes_pedigree = st.number_input('Diabetes Pedigree Function (Riwayat Keluarga)', min_value=0.0, max_value=3.0, value=0.0,
                                             help="Nilai fungsi yang mengukur riwayat diabetes dalam keluarga")
-        age = st.number_input('Age (Usia)', 0, 120, 30,
+        age = st.number_input('Age (Usia)', min_value=0, max_value=120, value=0,
                             help="Usia pasien dalam tahun")
 
     if st.button('🔍 Prediksi Diabetes'):
@@ -114,6 +148,9 @@ if mode == 'Input Manual':
 if  mode == 'Upload CSV':
     st.title('📂 Upload Data CSV Pasien')
     st.markdown("""Unggah file CSV yang berisi informasi medis dari **satu atau lebih pasien** untuk memprediksi risiko diabetes secara otomatis.
+                
+📌 File harus berformat CSV dan memiliki kolom berikut (tanpa header khusus):
+    Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DiabetesPedigreeFunction, Age
                 
 📌 Hasil prediksi akan ditampilkan dan dapat diunduh kembali setelah file berhasil diproses.""")
 
